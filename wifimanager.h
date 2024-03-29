@@ -55,6 +55,8 @@ class WIFIMANAGER {
     uint64_t startApTimeMillis = 0;     // Time when the AP was started
     uint32_t timeoutApMillis = 120000;  // Timeout of an AP when no client is connected, if timeout reached rescan, tryconnect or createAP
 
+    String softApName;                  // Name of the soft AP if created
+
     // Wipe the apList credentials
     void clearApList();
 
@@ -75,7 +77,7 @@ class WIFIMANAGER {
     bool getFallbackState();
 
     // Call to run the Task 
-    void startBackgroundTask();
+    void startBackgroundTask(String apName = "");
 
     // Attach a webserver and register api routes
 #if ASYNC_WEBSERVER == true

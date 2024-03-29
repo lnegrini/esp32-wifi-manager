@@ -39,7 +39,10 @@ void wifiTask(void* param) {
 /**
  * @brief Load config from NVS, start to connect to WIFI and initiate a background task to keep it up
  */
-void WIFIMANAGER::startBackgroundTask() {
+void WIFIMANAGER::startBackgroundTask(String softApName) {
+  if (softApName.length() > 0) {
+    this->softApName = softApName;
+  }
   loadFromNVS();
   tryConnect();
   xTaskCreatePinnedToCore(
@@ -320,7 +323,7 @@ void WIFIMANAGER::loop() {
       startApTimeMillis = millis(); // reset timeout as someone is connected
       return;
     }
-    Serial.println(F("[WIFI] Running in AP mode but timeout reached. Closing AP!"));
+    Serial.printf("[WIFI] Running in AP mode but timeout reached. Closing AP!\n");
     stopSoftAP();
     delay(100);
   }
@@ -442,14 +445,17 @@ bool WIFIMANAGER::tryConnect() {
  * @return false o error or if a SoftAP already runs
  */
 bool WIFIMANAGER::runSoftAP(String apName) {
+  if (this->softApName == "") {
+    this->softApName = apName;
+  }
   if (softApRunning) return true;
   startApTimeMillis = millis();
 
-  if (apName == "") apName = "ESP_" + String((uint32_t)ESP.getEfuseMac());
-  Serial.printf("[WIFI] Starting configuration portal on AP SSID %s\n", apName.c_str());
+  if (this->softApName == "") this->softApName = "ESP_" + String((uint32_t)ESP.getEfuseMac());
+  Serial.printf("[WIFI] Starting configuration portal on AP SSID %s\n", this->softApName.c_str());
 
   WiFi.mode(WIFI_AP);
-  bool state = WiFi.softAP(apName.c_str());
+  bool state = WiFi.softAP(this->softApName.c_str());
   if (state) {
     IPAddress IP = WiFi.softAPIP();
     Serial.print(F("[WIFI] AP created. My IP is: "));
